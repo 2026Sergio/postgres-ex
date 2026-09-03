@@ -1,43 +1,50 @@
--- ========================================================================================================
--- ==============================================================================================================
-
--- tabla: clientes
-CREATE TABLE clientes (
-    id_cliente SERIAL PRIMARY KEY,
-    nombre_completo VARCHAR(120) NOT NULL,
-    direccion VARCHAR(150) NOT NULL,
-    telefono VARCHAR(8) NOT NULL,
-    correo_electronico VARCHAR(100) NOT NULL UNIQUE
-);
-
---  TABLA: pedidos
-CREATE TABLE pedidos (
-    id_pedido SERIAL PRIMARY KEY,
-    fecha_pedido DATETIME NOT NULL DEFAULT,
-    id_cliente INT NOT NULL,
-);
-
--- TABLA: PRODUCTOS
-CREATE TABLE productos (
-    id_productos SERIAL PRIMARY KEY,
-    id_proveedor INT NOT NULL,
-    nombre VARCHAR(50),
-    precio DECIMAL (10.2) NOT NULL,
-    stock VARCHAR(50),
-);
-
--- TABLA: PROVEEDORES
+-- Tabla Proveedores
 CREATE TABLE proveedores (
     id_proveedor SERIAL PRIMARY KEY,
-    nombre_empresa VARCHAR(100) NOT NULL,
-    contacto_principal VARCHAR(100) NOT NULL,
-    telefono VARCHAR(8) NOT NULL,
-    correo_electronico VARCHAR(100) NOT NULL
+    nombre VARCHAR(100) NOT NULL,
+    contacto VARCHAR(100),
+    telefono VARCHAR(20),
+    email VARCHAR(100) UNIQUE
 );
 
--- TABLA: categorias
+-- Tabla Categorías
 CREATE TABLE categorias (
     id_categoria SERIAL PRIMARY KEY,
-    nombre_categoria VARCHAR(50) NOT NULL UNIQUE,
-    tipo_producto text
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion TEXT
+);
+
+-- Tabla Productos
+CREATE TABLE productos (
+    id_producto SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    id_categoria INT NOT NULL REFERENCES categorias(id_categoria) ON DELETE RESTRICT,
+    precio NUMERIC(10, 2) NOT NULL CHECK (precio >= 0),
+    stock INT NOT NULL CHECK (stock >= 0),
+    id_proveedor INT NOT NULL REFERENCES proveedores(id_proveedor) ON DELETE RESTRICT
+);
+
+-- Tabla Clientes
+CREATE TABLE clientes (
+    id_cliente SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    telefono VARCHAR(20)
+);
+
+-- Tabla Ventas
+CREATE TABLE ventas (
+    id_venta SERIAL PRIMARY KEY,
+    id_cliente INT NOT NULL REFERENCES clientes(id_cliente) ON DELETE RESTRICT,
+    fecha_venta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total NUMERIC(10, 2) DEFAULT 0.00 CHECK (total >= 0)
+);
+
+-- Tabla Detalle de Ventas
+CREATE TABLE detalle_ventas (
+    id_detalle SERIAL PRIMARY KEY,
+    id_venta INT NOT NULL REFERENCES ventas(id_venta) ON DELETE CASCADE,
+    id_producto INT NOT NULL REFERENCES productos(id_producto) ON DELETE RESTRICT,
+    cantidad INT NOT NULL CHECK (cantidad > 0),
+    precio_unitario NUMERIC(10, 2) NOT NULL CHECK (precio_unitario >= 0)
 );
